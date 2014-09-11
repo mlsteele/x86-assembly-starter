@@ -1,27 +1,21 @@
-.text                           # section declaration
-
-                              # we must export the entry point to the ELF linker or
-    .global _start              # loader. They conventionally recognize _start as their
-			                          # entry point. Use ld -e foo to override the default.
-
+.text
+.globl _start
 _start:
+    # write string to stdout
+    # syscall:%eax (%ebx, %ecx, %edx, %esx, %edi)
+    # ssize_t write(int fd, const void *buf, size_t count);
+    movl $len, %edx # arg 3: message length
+    movl $msg, %ecx # arg 2: pointer to message
+    movl $1, %ebx # arg 1: file handle (stdout)
+    movl $4, %eax # syscall: write
+    int $0x80
 
-                                # write our string to stdout
+    # exit
+    movl $0, %ebx # arg 1: status
+    movl $1, %eax # syscall: exit
+    int $0x80
 
-	  movl    $len,%edx           # third argument: message length
-	  movl    $msg,%ecx           # second argument: pointer to message to write
-	  movl    $1,%ebx             # first argument: file handle (stdout)
-	  movl    $4,%eax             # system call number (sys_write)
-	  int     $0x80               # call kernel
-
-                                # and exit
-
-	  movl    $0,%ebx             # first argument: exit code
-	  movl    $1,%eax             # system call number (sys_exit)
-	  int     $0x80               # call kernel
-
-.data                           # section declaration
-
+.data
 msg:
-	.ascii    "Hello, world!\n"   # our dear string
-	len = . - msg                 # length of our dear string
+    .ascii "Hello, world!\n"
+    len = . - msg
